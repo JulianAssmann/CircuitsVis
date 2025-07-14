@@ -37,6 +37,7 @@ export function AttentionHeadsSelector({
   onMouseLeave,
   positiveColor,
   maskUpperTri,
+  matchColor,
   tokens
 }: AttentionHeadsProps & {
   attentionHeadNames: string[];
@@ -90,8 +91,12 @@ export function AttentionHeadsSelector({
                   showAxisLabels={false}
                   maxValue={maxValue}
                   minValue={minValue}
-                  negativeColor={negativeColor}
-                  positiveColor={positiveColor}
+                  negativeColor={matchColor ? undefined : negativeColor}
+                  positiveColor={
+                    matchColor
+                      ? attentionHeadColor(idx, attention.length)
+                      : positiveColor
+                  }
                   maskUpperTri={maskUpperTri}
                 />
               </div>
@@ -118,6 +123,7 @@ export function AttentionHeads({
   positiveColor,
   maskUpperTri = true,
   showTokens = true,
+  matchColor = false,
   tokens
 }: AttentionHeadsProps) {
   // Attention head focussed state
@@ -169,6 +175,7 @@ export function AttentionHeads({
         onMouseLeave={onMouseLeave}
         positiveColor={positiveColor}
         maskUpperTri={maskUpperTri}
+        matchColor={matchColor}
         tokens={tokens}
       />
 
@@ -194,8 +201,12 @@ export function AttentionHeads({
               attention={attention[focused]}
               maxValue={maxValue}
               minValue={minValue}
-              negativeColor={negativeColor}
-              positiveColor={positiveColor}
+              negativeColor={matchColor ? undefined : negativeColor}
+              positiveColor={
+                matchColor
+                  ? attentionHeadColor(focused, attention.length)
+                  : positiveColor
+              }
               zoomed={true}
               maskUpperTri={maskUpperTri}
               tokens={tokens}
@@ -334,6 +345,15 @@ export interface AttentionHeadsProps {
    * @default true
    */
   showTokens?: boolean;
+
+  /**
+   * Match colors
+   *
+   * Whether to match colors between attention patterns, token visualization, and head headers for visual consistency.
+   *
+   * @default true
+   */
+  matchColor?: boolean;
 
   /**
    * List of tokens

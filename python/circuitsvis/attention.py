@@ -16,7 +16,8 @@ def attention_heads(
     negative_color: Optional[str] = None,
     positive_color: Optional[str] = None,
     mask_upper_tri: Optional[bool] = None,
-    show_tokens: Optional[bool] = True,
+    show_tokens: Optional[bool] = None,
+    match_color: Optional[bool] = None,
 ) -> RenderedHTML:
     """Attention Heads
 
@@ -26,8 +27,8 @@ def attention_heads(
     is then shown in full size.
 
     Args:
-        attention: Attention head activations of the shape [dest_tokens x
-        src_tokens]
+        attention: Attention head activations of the shape [heads x dest_tokens x src_tokens]
+        or [dest_tokens x src_tokens] (will be expanded to single head)
         tokens: List of tokens (e.g. `["A", "person"]`). Must be the same length
         as the list of values.
         max_value: Maximum value. Used to determine how dark the token color is
@@ -43,8 +44,10 @@ def attention_heads(
         mask_upper_tri: Whether or not to mask the upper triangular portion of
         the attention patterns. Should be true for causal attention, false for
         bidirectional attention.
-        attention: Attention head activations of the shape [heads x dest_tokens x src_tokens]
-        or [dest_tokens x src_tokens] (will be expanded to single head)
+        show_tokens: Whether to show interactive token visualization where
+        hovering over tokens shows attention strength to other tokens.
+        match_color: Whether to match colors between attention patterns, token
+        visualization, and head headers for visual consistency.
 
     Returns:
         Html: Attention pattern visualization
@@ -83,6 +86,7 @@ def attention_heads(
         "tokens": tokens,
         "maskUpperTri": mask_upper_tri,
         "showTokens": show_tokens,
+        "matchColor": match_color,
     }
 
     return render(
