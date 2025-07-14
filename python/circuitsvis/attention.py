@@ -3,6 +3,7 @@ from typing import List, Optional, Union
 
 import numpy as np
 import torch
+
 from circuitsvis.utils.render import RenderedHTML, render
 
 
@@ -15,6 +16,7 @@ def attention_heads(
     negative_color: Optional[str] = None,
     positive_color: Optional[str] = None,
     mask_upper_tri: Optional[bool] = None,
+    show_tokens: Optional[bool] = True,
 ) -> RenderedHTML:
     """Attention Heads
 
@@ -41,10 +43,36 @@ def attention_heads(
         mask_upper_tri: Whether or not to mask the upper triangular portion of
         the attention patterns. Should be true for causal attention, false for
         bidirectional attention.
+        attention: Attention head activations of the shape [heads x dest_tokens x src_tokens]
+        or [dest_tokens x src_tokens] (will be expanded to single head)
 
     Returns:
         Html: Attention pattern visualization
     """
+
+    # Convert attention to numpy array
+    if isinstance(attention, torch.Tensor):
+        attention = attention.detach().cpu().numpy()
+    elif not isinstance(attention, np.ndarray):
+        attention = np.array(attention)
+
+    # Ensure attention is 3D (num_heads, dest_len, src_len)
+    if attention.ndim == 2:
+        attention = attention[np.newaxis, :, :]
+    elif attention.ndim != 3:
+        raise ValueError(
+            f"Attention tensor must be 2D or 3D, got {attention.ndim}D tensor."
+        )
+
+    num_heads, dest_len, src_len = attention.shape
+
+    # Validate token count matches attention dimensions
+    if len(tokens) != dest_len or len(tokens) != src_len:
+        raise ValueError(
+            f"Token count ({len(tokens)}) doesn't match attention dimensions "
+            f"(dest: {dest_len}, src: {src_len}). For causal attention, these should all be equal."
+        )
+
     kwargs = {
         "attention": attention,
         "attentionHeadNames": attention_head_names,
@@ -54,6 +82,7 @@ def attention_heads(
         "positiveColor": positive_color,
         "tokens": tokens,
         "maskUpperTri": mask_upper_tri,
+        "showTokens": show_tokens,
     }
 
     return render(
