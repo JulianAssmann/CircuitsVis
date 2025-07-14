@@ -53,21 +53,24 @@ def attention_heads(
         Html: Attention pattern visualization
     """
 
-    # Convert attention to numpy array
+    # Convert attention to numpy array if it's not already
+    attention_np: np.ndarray
     if isinstance(attention, torch.Tensor):
-        attention = attention.detach().cpu().numpy()
-    elif not isinstance(attention, np.ndarray):
-        attention = np.array(attention)
+        attention_np = attention.detach().cpu().numpy()
+    elif isinstance(attention, np.ndarray):
+        attention_np = attention
+    else:
+        attention_np = np.array(attention)
 
     # Ensure attention is 3D (num_heads, dest_len, src_len)
-    if attention.ndim == 2:
-        attention = attention[np.newaxis, :, :]
-    elif attention.ndim != 3:
+    if attention_np.ndim == 2:
+        attention_np = attention_np[np.newaxis, :, :]
+    elif attention_np.ndim != 3:
         raise ValueError(
-            f"Attention tensor must be 2D or 3D, got {attention.ndim}D tensor."
+            f"Attention tensor must be 2D or 3D, got {attention_np.ndim}D tensor."
         )
 
-    num_heads, dest_len, src_len = attention.shape
+    num_heads, dest_len, src_len = attention_np.shape
 
     # Validate token count matches attention dimensions
     if len(tokens) != dest_len or len(tokens) != src_len:
@@ -77,7 +80,7 @@ def attention_heads(
         )
 
     kwargs = {
-        "attention": attention,
+        "attention": attention_np,
         "attentionHeadNames": attention_head_names,
         "maxValue": max_value,
         "minValue": min_value,
